@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.management.controller.mgt;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.annotation.log.OperationTypeEnum;
 import cn.woyun.anov.gateway.management.annotation.user.CreateUser;
@@ -35,7 +36,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/roles")
 @Api(tags = "角色API接口")
+@SaCheckLogin
 public class RoleController extends BaseController {
+
+    // TODO 角色编号、名称不能重复
 
     /**
      * 创建角色。
@@ -193,7 +197,7 @@ public class RoleController extends BaseController {
     }
 
     /**
-     * @return 查询全部角色。
+     * @return 查询全部的业务角色，不包含超级管理员和系统管理员的角色。
      */
     @GetMapping("/v1")
     @OperationLog(system = "管理平台", module = "角色管理", description = "查询全部角色", type = OperationTypeEnum.QUERY)

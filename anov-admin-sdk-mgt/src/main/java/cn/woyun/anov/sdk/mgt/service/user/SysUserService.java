@@ -87,10 +87,10 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * 根据帐号查询用户。
      *
-     * @param account 账号。
+     * @param id 用户主键。
      * @return 用户。
      */
-    SysUser findByAccount(final String account);
+    SysUser findById(final long id);
 
     /**
      * 根据帐号密码查询用户。
@@ -99,15 +99,15 @@ public interface SysUserService extends IService<SysUser> {
      * @param password 密码。
      * @return 用户。
      */
-    boolean findByAccountAndPassword(final String account, final String password);
+    SysUser findByAccountAndPassword(final String account, final String password);
 
     /**
-     * 根据帐号查询用户的部门。
+     * 根据部门主键查询部门下的用户数量。
      *
-     * @param account 帐号。
-     * @return 部门主键。
+     * @param deptId 部门主键。
+     * @return 用户数量。
      */
-    long findDeptIdByAccount(final String account);
+    int findUserCountByDeptId(final long deptId);
 
     /**
      * 根据条件分页查询用户。
@@ -117,13 +117,5 @@ public interface SysUserService extends IService<SysUser> {
      * @return 用户集合。
      */
     Page<SysUser> findByPageAndCondition(final Page<SysUser> page, final SysUser sysUser);
-
-    /**
-     * 根据部门主键查询部门下的用户数量。
-     *
-     * @param deptId 部门主键。
-     * @return 用户数量。
-     */
-    int findUserCountByDeptId(final long deptId);
 
 }

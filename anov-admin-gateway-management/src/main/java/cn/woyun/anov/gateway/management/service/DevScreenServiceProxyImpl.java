@@ -2,11 +2,9 @@ package cn.woyun.anov.gateway.management.service;
 
 import cn.woyun.anov.gateway.management.bean.response.dev.DevScreenResponseBean;
 import cn.woyun.anov.sdk.dev.entity.DevScreen;
-import cn.woyun.anov.sdk.dev.exception.DevScreenCannotCreateException;
 import cn.woyun.anov.sdk.dev.service.DevScreenPicService;
 import cn.woyun.anov.sdk.dev.service.DevScreenService;
 import cn.woyun.anov.sdk.mgt.service.dept.SysDeptService;
-import cn.woyun.anov.sdk.mgt.service.user.SysUserService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,8 +28,6 @@ public class DevScreenServiceProxyImpl implements DevScreenServiceProxy {
      */
     @Override
     public boolean create(final DevScreen devScreen) {
-        setDevDept(devScreen);
-        // 创建大屏
         return devScreenService.create(devScreen);
     }
 
@@ -43,8 +39,6 @@ public class DevScreenServiceProxyImpl implements DevScreenServiceProxy {
      */
     @Override
     public boolean update(final DevScreen devScreen) {
-        setDevDept(devScreen);
-        // 创建大屏
         return devScreenService.update(devScreen);
     }
 
@@ -119,24 +113,6 @@ public class DevScreenServiceProxyImpl implements DevScreenServiceProxy {
     }
 
     /**
-     * 设置操作大屏的登录人部门。
-     *
-     * @param devScreen 大屏对象。
-     */
-    private void setDevDept(final DevScreen devScreen) {
-        // 查询当前用户部门
-        final String account = devScreen.getModifyUser();
-        final long deptId = sysUserService.findDeptIdByAccount(account);
-        final String deptName = sysDeptService.findById(deptId).getDeptName();
-        if (deptId == 0L) {
-            // 创建者必须有一个部门
-            throw new DevScreenCannotCreateException("创建大屏的用户[" + account + "]必须在某个部门下。");
-        }
-        devScreen.setDeptId(deptId);
-        devScreen.setDeptName(deptName);
-    }
-
-    /**
      * 自动装配大屏的业务处理接口。
      *
      * @param devScreenService 大屏的业务处理接口。
@@ -144,16 +120,6 @@ public class DevScreenServiceProxyImpl implements DevScreenServiceProxy {
     @Autowired
     public void setDevScreenService(DevScreenService devScreenService) {
         this.devScreenService = devScreenService;
-    }
-
-    /**
-     * 自动装配用户的业务处理接口。
-     *
-     * @param sysUserService 用户的业务处理接口。
-     */
-    @Autowired
-    public void setSysUserService(SysUserService sysUserService) {
-        this.sysUserService = sysUserService;
     }
 
     /**
@@ -180,11 +146,6 @@ public class DevScreenServiceProxyImpl implements DevScreenServiceProxy {
      * 大屏的业务处理接口。
      */
     private DevScreenService devScreenService;
-
-    /**
-     * 用户的业务处理接口。
-     */
-    private SysUserService sysUserService;
 
     /**
      * 部门的业务处理接口。

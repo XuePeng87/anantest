@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.dev.serivce;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.woyun.anov.gateway.dev.bean.resposne.DevAppLoginResponseBean;
 import cn.woyun.anov.gateway.dev.consts.DevScreenConsts;
 import cn.woyun.anov.gateway.dev.exception.app.DevAppLoginFailedException;
@@ -8,6 +9,8 @@ import cn.woyun.anov.gateway.dev.exception.app.DevAppTargetOfflineException;
 import cn.woyun.anov.random.RandomUtil;
 import cn.woyun.anov.sdk.dev.entity.DevScreenClient;
 import cn.woyun.anov.sdk.dev.service.DevScreenClientService;
+import cn.woyun.anov.sdk.mgt.entity.SysUser;
+import cn.woyun.anov.sdk.mgt.exception.SysUserNotFoundException;
 import cn.woyun.anov.sdk.mgt.service.user.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -38,14 +41,17 @@ public class DevAppServiceProxyImpl implements DevAppServiceProxy {
     @Override
     public DevAppLoginResponseBean login(final String username, final String password) {
         // 进行登录
-        if (!sysUserService.findByAccountAndPassword(username, password)) {
-            log.info("username or password incorrect.");
-            throw new DevAppLoginFailedException("用户名或密码不正确");
+        try {
+            final SysUser sysUser = sysUserService.findByAccountAndPassword(username, password);
+            StpUtil.login(sysUser.getId());
+            final DevAppLoginResponseBean result = new DevAppLoginResponseBean();
+            result.setTokenName(StpUtil.getTokenName());
+            result.setTokenValue(StpUtil.getTokenValue());
+            result.setClientCode(generateClientCode());
+            return result;
+        } catch (SysUserNotFoundException e) {
+            throw new DevAppLoginFailedException(e.getMessage());
         }
-        final DevAppLoginResponseBean result = new DevAppLoginResponseBean();
-        result.setToken(RandomUtil.get32UUID());
-        result.setClientCode(generateClientCode());
-        return result;
     }
 
     /**

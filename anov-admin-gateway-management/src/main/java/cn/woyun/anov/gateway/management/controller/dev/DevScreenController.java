@@ -1,5 +1,7 @@
 package cn.woyun.anov.gateway.management.controller.dev;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.annotation.log.OperationLog;
 import cn.woyun.anov.gateway.management.annotation.log.OperationTypeEnum;
@@ -14,11 +16,13 @@ import cn.woyun.anov.http.DefaultHttpResultFactory;
 import cn.woyun.anov.http.HttpResult;
 import cn.woyun.anov.page.PageResult;
 import cn.woyun.anov.sdk.dev.entity.DevScreen;
+import cn.woyun.anov.sdk.mgt.entity.SysUser;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +30,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 大屏的API类。
@@ -35,6 +40,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/devs")
 @Api(tags = "大屏API接口")
+@Slf4j
+@SaCheckLogin
 public class DevScreenController extends BaseController {
 
     /**
@@ -44,11 +51,18 @@ public class DevScreenController extends BaseController {
      * @return 是否创建成功。
      */
     @PostMapping("/v1")
-    @OperationLog(system = "管理平台", module = "大屏管理", description = "创建大屏", type = OperationTypeEnum.CREATE)
     @CreateUser
+    @OperationLog(system = "管理平台", module = "大屏管理", description = "创建大屏", type = OperationTypeEnum.CREATE)
     @ApiOperation(value = "创建大屏")
     public HttpResult<Boolean> create(@Valid @RequestBody final DevScreenRequestBean devScreenRequestBean) {
         final DevScreen devScreen = BeanUtil.objToObj(devScreenRequestBean, DevScreen.class);
+        // 设置租户主键
+        final Long tenantId = getTenantId();
+        if (!Objects.isNull(tenantId)) devScreen.setTenantId(tenantId);
+        // 设置操作人的部门
+        final SysUser user = (SysUser) StpUtil.getSession().get("user");
+        devScreen.setDeptId(user.getDeptId());
+        devScreen.setDeptName(user.getDeptName());
         if (devScreenServiceProxy.create(devScreen)) {
             return DefaultHttpResultFactory.success("创建大屏成功。", Boolean.TRUE);
         }
@@ -72,6 +86,13 @@ public class DevScreenController extends BaseController {
                                       @Valid @RequestBody final DevScreenRequestBean devScreenRequestBean) {
         final DevScreen devScreen = BeanUtil.objToObj(devScreenRequestBean, DevScreen.class);
         devScreen.setId(id);
+        // 设置租户主键
+        final Long tenantId = getTenantId();
+        if (!Objects.isNull(tenantId)) devScreen.setTenantId(tenantId);
+        // 设置操作人的部门
+        final SysUser user = (SysUser) StpUtil.getSession().get("user");
+        devScreen.setDeptId(user.getDeptId());
+        devScreen.setDeptName(user.getDeptName());
         if (devScreenServiceProxy.update(devScreen)) {
             return DefaultHttpResultFactory.success("修改大屏成功。", Boolean.TRUE);
         }

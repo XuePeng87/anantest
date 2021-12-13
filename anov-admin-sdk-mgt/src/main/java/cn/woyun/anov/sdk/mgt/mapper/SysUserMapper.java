@@ -24,7 +24,8 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
      * @return 用户。
      */
     @InterceptorIgnore(tenantLine = "1")
-    SysUser findByAccount(@Param("account") final String account);
+    SysUser findByAccountAndPassword(@Param("account") final String account,
+                                     @Param("password") final String password);
 
     /**
      * 根据帐号查询用户集合。

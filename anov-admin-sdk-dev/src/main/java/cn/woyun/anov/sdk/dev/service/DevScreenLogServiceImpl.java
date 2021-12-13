@@ -30,7 +30,6 @@ public class DevScreenLogServiceImpl extends ServiceImpl<DevScreenLogMapper, Dev
      * @param devScreenLog 大屏日志对象。
      */
     @Override
-    @Async
     public void create(final DevScreenLog devScreenLog) {
         devScreenLog.setCreateTime(LocalDateTime.now());
         super.save(devScreenLog);

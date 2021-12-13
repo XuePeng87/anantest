@@ -1,7 +1,8 @@
 package cn.woyun.anov.gateway.management.config.mybatis;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.woyun.anov.config.mgt.SysTenantConfiguration;
-import cn.woyun.anov.gateway.management.config.security.WebSecurityAuthenticationDetails;
+import cn.woyun.anov.sdk.mgt.entity.SysUser;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
@@ -12,8 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Objects;
 
@@ -28,16 +27,6 @@ import java.util.Objects;
         "cn.woyun.anov.sdk.dev.mapper"
 })
 public class MybatisConfig {
-
-    /**
-     * 超级管理员。
-     */
-    private static final String SUPER_ADMIN = "ROLE_SUPER_ADMIN";
-
-    /**
-     * 系统管理员。
-     */
-    private static final String SYSTEM_ADMIN = "ROLE_SYSTEM_ADMIN";
 
     /**
      * @return 设置分页拦截器。
@@ -61,11 +50,14 @@ public class MybatisConfig {
              */
             @Override
             public Expression getTenantId() {
-                final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                if (Objects.isNull(authentication)) {
+                if(!StpUtil.isLogin()) {
                     return null;
                 }
-                final Long tenantId = ((WebSecurityAuthenticationDetails) authentication.getDetails()).getTenantId();
+                final SysUser sysUser = (SysUser) StpUtil.getSession().get("user");
+                if (Objects.isNull(sysUser)) {
+                    return null;
+                }
+                final Long tenantId = sysUser.getTenantId();
                 if (Objects.isNull(tenantId)) {
                     return null;
                 }
@@ -88,12 +80,9 @@ public class MybatisConfig {
              */
             @Override
             public boolean ignoreTable(String tableName) {
-                final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                if (!Objects.isNull(authentication) && !StringUtils.equals(authentication.getName(), "anonymousUser")) {
-                    final WebSecurityAuthenticationDetails webSecurityAuthenticationDetails
-                            = (WebSecurityAuthenticationDetails) authentication.getDetails();
-                    if (webSecurityAuthenticationDetails.getRoles().contains(SUPER_ADMIN)
-                            || webSecurityAuthenticationDetails.getRoles().contains(SYSTEM_ADMIN)) {
+                if (StpUtil.isLogin()) {
+                    final SysUser sysUser = (SysUser) StpUtil.getSession().get("user");
+                    if (!Objects.isNull(sysUser) && StringUtils.equals(sysUser.getUserAccount(), "superadmin")) {
                         return true;
                     }
                 }

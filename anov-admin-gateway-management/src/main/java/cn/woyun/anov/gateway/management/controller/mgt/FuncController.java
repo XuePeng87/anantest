@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.management.controller.mgt;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.annotation.log.OperationLog;
 import cn.woyun.anov.gateway.management.annotation.log.OperationTypeEnum;
@@ -35,6 +36,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/funcs")
 @Api(tags = "功能API接口")
+@SaCheckLogin
 public class FuncController extends BaseController {
 
     /**

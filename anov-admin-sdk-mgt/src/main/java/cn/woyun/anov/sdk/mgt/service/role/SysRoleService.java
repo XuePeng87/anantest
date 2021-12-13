@@ -125,7 +125,7 @@ public interface SysRoleService extends IService<SysRole> {
     List<Long> findFuncIdsByRoleIds(final List<Long> ids);
 
     /**
-     * @return 查询全部的业务角色。
+     * @return 查询全部的业务角色，不包含超级管理员和系统管理员的角色。
      */
     List<SysRole> findBusinessRoles();
 

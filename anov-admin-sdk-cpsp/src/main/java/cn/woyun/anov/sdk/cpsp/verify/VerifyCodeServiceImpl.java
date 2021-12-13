@@ -69,7 +69,7 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
             log.debug("validating, code = {}, answer = {}", code, answer);
         }
         if (StringUtils.isBlank(answer)) {
-            throw new IllegalArgumentException("验证码不存在或过期");
+            throw new VerifyCodeExpiredException("验证码不存在或过期");
         }
         return StringUtils.isNotBlank(code) && StringUtils.equals(answer, code);
     }

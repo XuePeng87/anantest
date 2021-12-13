@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
  * @author xuepeng
  */
 @Data
-@ToString
 @EqualsAndHashCode
+@ToString
 @ApiModel(value = "大屏客户端的响应类")
 public class DevScreenClientResponseBean {
 

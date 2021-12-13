@@ -2,14 +2,6 @@ server:
   port: 45672
   servlet:
     context-path: /api
-# 如果使用https，请放开下面的注释
-#  ssl:
-#    enabled: true
-#    key-store: classpath:bms.keystore
-#    key-store-type: PKCS12
-#    key-alias: bms
-#    key-password: 123456
-#    key-store-password: 123456
 logging:
   config: classpath:log4j-dev.xml
 spring:
@@ -41,28 +33,23 @@ spring:
         min-idle: 0
         max-idle: 10
     timeout: 5000
-  session:
-    store-type: redis
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 500MB
-  mail:
-    host: smtp.qq.com
-    username: 100103081@qq.com
-    password: ltsjolgvxshibiii
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+sa-token:
+  token-name: X-ANOV-ACCESS-TOKEN # token名称 (同时也是cookie名称)
+  timeout: 2592000 # token有效期，单位s 默认30天, -1代表永不过期
+  activity-timeout: -1 # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
+  is-concurrent: true # 是否允许同一账号并发登录(为true时允许一起登录, 为false时新登录挤掉旧登录)
+  is-share: true # 在多人登录同一账号时(为true共用一个token, 为false每次登录新建一个token)
+  token-style: uuid # token风格
+  is-log: false # 是否输出操作日志
 anov:
   cpsp:
     oss:

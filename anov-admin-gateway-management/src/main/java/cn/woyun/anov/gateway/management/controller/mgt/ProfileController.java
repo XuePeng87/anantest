@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.management.controller.mgt;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.woyun.anov.gateway.management.annotation.log.OperationTypeEnum;
 import cn.woyun.anov.gateway.management.annotation.user.ModifyUser;
 import cn.woyun.anov.gateway.management.annotation.log.OperationLog;
@@ -26,6 +27,7 @@ import javax.validation.constraints.NotNull;
 @RestController
 @RequestMapping("/v1/profiles")
 @Api(tags = "用户中心API接口")
+@SaCheckLogin
 public class ProfileController extends BaseController {
 
     /**

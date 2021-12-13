@@ -1,11 +1,12 @@
 package cn.woyun.anov.gateway.management.annotation.user;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.woyun.anov.gateway.management.bean.request.BaseRequestBean;
+import cn.woyun.anov.sdk.mgt.entity.SysUser;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,10 +36,10 @@ public class UserAspect {
         for (Object requestBean : joinPoint.getArgs()) {
             if (requestBean instanceof BaseRequestBean) {
                 // 获取当前登录人
-                final String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+                final SysUser sysUser = (SysUser) StpUtil.getSession().get("user");
                 final BaseRequestBean gatewayBaseRequestBean = (BaseRequestBean) requestBean;
-                gatewayBaseRequestBean.setCreateUser(currentUser);
-                gatewayBaseRequestBean.setModifyUser(currentUser);
+                gatewayBaseRequestBean.setCreateUser(sysUser.getUserAccount());
+                gatewayBaseRequestBean.setModifyUser(sysUser.getUserAccount());
             }
         }
     }
@@ -60,9 +61,9 @@ public class UserAspect {
     public void beforeModify(JoinPoint joinPoint) {
         for (Object requestBean : joinPoint.getArgs()) {
             if (requestBean instanceof BaseRequestBean) {
-                final String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+                final SysUser sysUser = (SysUser) StpUtil.getSession().get("user");
                 final BaseRequestBean gatewayBaseRequestBean = (BaseRequestBean) requestBean;
-                gatewayBaseRequestBean.setModifyUser(currentUser);
+                gatewayBaseRequestBean.setModifyUser(sysUser.getUserAccount());
             }
         }
     }

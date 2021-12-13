@@ -41,6 +41,8 @@ public class DevScreenPicServiceImpl extends ServiceImpl<DevScreenPicMapper, Dev
         );
         devScreenPic.setCreateTime(LocalDateTime.now());
         if (Objects.isNull(pic)) {
+            final long tenantId = devScreenService.findByKey(devScreenPic.getScreenKey()).getTenantId();
+            devScreenPic.setTenantId(tenantId);
             super.save(devScreenPic);
         } else {
             devScreenPic.setId(pic.getId());

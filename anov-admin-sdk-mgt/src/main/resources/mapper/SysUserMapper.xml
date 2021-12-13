@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.woyun.anov.sdk.mgt.mapper.SysUserMapper">
 
-    <select id="findByAccount" resultType="cn.woyun.anov.sdk.mgt.entity.SysUser">
-        SELECT * FROM `sys_user` WHERE `user_account` = #{account}
+    <select id="findByAccountAndPassword" resultType="cn.woyun.anov.sdk.mgt.entity.SysUser">
+        SELECT id, tenant_id FROM `sys_user` WHERE `user_account` = #{account} and `user_password` = #{password}
     </select>
 
     <select id="listByAccount" resultType="cn.woyun.anov.sdk.mgt.entity.SysUser">

@@ -45,12 +45,13 @@ public class DevScreenServiceImpl extends ServiceImpl<DevScreenMapper, DevScreen
         if (devScreen.getDeptId() == 0L) {
             throw new DevScreenCannotCreateException("创建大屏的用户必须在某个部门下。");
         }
-        // 验证大屏Key是否重复
+        // 生成大屏的Key
         String screenKey;
         do {
             screenKey = RandomUtil.get12String();
         } while (this.checkScreenKeyExist(screenKey));
         devScreen.setScreenKey(screenKey);
+        // 设置大屏的过期时间
         devScreen.setScreenExpireTime(LocalDateTime.now().plusDays(
                 devScreenConfiguration.getExpiration().toDays()
         ));
@@ -78,17 +79,22 @@ public class DevScreenServiceImpl extends ServiceImpl<DevScreenMapper, DevScreen
         // 生成芯片
         final String param = screenCoreGenerator.generate(devScreen);
         devScreen.setScreenCore(param.getBytes(StandardCharsets.UTF_8));
-        devScreenFuncRelationService.saveScreenFunc(devScreen.getId(), devScreen.getFuncs());
+        devScreenFuncRelationService.saveScreenFunc(
+                devScreen.getId(),
+                devScreen.getTenantId(),
+                devScreen.getFuncs()
+        );
         return super.updateById(devScreen);
     }
 
     /**
-     * 根据标识修改大屏。
+     * 更新大屏的预览状态，并把大屏的检测次数+1。
      *
-     * @param devScreen 大屏标识。
+     * @param devScreen 大屏。
      * @return 是否修改成功。
      */
-    public boolean updateByKey(final DevScreen devScreen) {
+    public boolean updateScreenPriview(final DevScreen devScreen) {
+        // 把大屏的检测次数+1
         return super.update(devScreen,
                 createUpdateWrapper().lambda()
                         .eq(DevScreen::getScreenKey, devScreen.getScreenKey())
@@ -123,7 +129,7 @@ public class DevScreenServiceImpl extends ServiceImpl<DevScreenMapper, DevScreen
     public boolean deleteByIds(final List<Long> ids) {
         // 删除大屏与功能的关系
         for (final long id : ids) {
-            devScreenFuncRelationService.saveScreenFunc(id, new ArrayList<>(0));
+            devScreenFuncRelationService.saveScreenFunc(id, null, new ArrayList<>(0));
         }
         // 删除大屏
         return super.removeByIds(ids);

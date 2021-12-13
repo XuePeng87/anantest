@@ -20,10 +20,11 @@ public interface DevScreenFuncRelationService extends IService<DevScreenFuncRela
      * 保存大屏与功能的关系。
      *
      * @param id        大屏主键。
+     * @param tenantId  大屏租户主键。
      * @param funcNames 功能名称。
      * @return 是否保存成功。
      */
-    boolean saveScreenFunc(final long id, final Collection<String> funcNames);
+    boolean saveScreenFunc(final long id, final Long tenantId, final Collection<String> funcNames);
 
     /**
      * 根据主键查询功能。

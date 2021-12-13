@@ -1,18 +1,18 @@
-package cn.woyun.anov.gateway.dev.exception.app;
+package cn.woyun.anov.sdk.cpsp.verify;
 
 import cn.woyun.anov.exception.BaseException;
 
 /**
- * 设备登录验证码错误异常。
+ * 验证码过期或不存在时发生该异常。
  *
  * @author xuepeng
  */
-public class DevAppLoginVerifyCodeException extends BaseException {
+public class VerifyCodeExpiredException extends BaseException {
 
     /**
      * 构造函数。
      */
-    public DevAppLoginVerifyCodeException() {
+    public VerifyCodeExpiredException() {
     }
 
     /**
@@ -20,7 +20,7 @@ public class DevAppLoginVerifyCodeException extends BaseException {
      *
      * @param msg 异常信息。
      */
-    public DevAppLoginVerifyCodeException(String msg) {
+    public VerifyCodeExpiredException(String msg) {
         super(msg);
     }
 
@@ -29,7 +29,7 @@ public class DevAppLoginVerifyCodeException extends BaseException {
      *
      * @param cause 异常原因。
      */
-    public DevAppLoginVerifyCodeException(Throwable cause) {
+    public VerifyCodeExpiredException(Throwable cause) {
         super(cause);
     }
 
@@ -39,7 +39,7 @@ public class DevAppLoginVerifyCodeException extends BaseException {
      * @param msg   异常信息。
      * @param cause 异常原因。
      */
-    public DevAppLoginVerifyCodeException(String msg, Throwable cause) {
+    public VerifyCodeExpiredException(String msg, Throwable cause) {
         super(msg, cause);
     }
 

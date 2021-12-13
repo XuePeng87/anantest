@@ -104,7 +104,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public boolean updatePassword(final long id, final String oldPassword, final String newPassword) {
         // 验证旧密码是否正确
         final SysUser user = super.getById(id);
-        if (!sysUserPasswordHandler.matches(oldPassword, user.getUserPassword())) {
+        if (StringUtils.equals(oldPassword, user.getUserPassword())) {
             throw new SysUserOldPasswordIncorrectException("旧密码不正确。");
         }
         // 更新密码。
@@ -150,90 +150,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     /**
-     * 根据帐号查询用户。
-     *
-     * @param account 账号。
-     * @return 用户。
-     */
-    @Override
-    public SysUser findByAccount(final String account) {
-        final SysUser sysUser = super.getBaseMapper().findByAccount(account);
-        if (Objects.isNull(sysUser)) {
-            throw new SysUserNotFoundException("根据账号[" + account + "]未能查询到用户");
-        }
-        // 查询用户拥有的角色
-        final List<SysRole> sysRoles = sysRoleService.findRolesByUserId(sysUser.getId());
-        sysUser.setRoles(sysRoles);
-        // 查询用户拥有的角色的功能合集
-        if (CollectionUtils.isNotEmpty(sysRoles)) {
-            final List<Long> roleIds = sysRoles.stream().map(SysRole::getId).collect(Collectors.toList());
-            final List<Long> funcIds = sysRoleService.findFuncIdsByRoleIds(roleIds);
-            final List<SysFunc> funcs = sysFuncService.findByIds(funcIds);
-            sysUser.setFuncs(funcs);
-        }
-        // 查询用户拥有的部门
-        final SysDept sysDept = sysDeptService.findById(sysUser.getDeptId());
-        sysUser.setDept(sysDept);
-        // 查询用户所属的租户
-        final SysTenant sysTenant = sysTenantService.findById(sysUser.getTenantId());
-        sysUser.setTenant(sysTenant);
-        return sysUser;
-    }
-
-    /**
-     * 根据帐号密码查询用户。
-     *
-     * @param account  帐号。
-     * @param password 密码。
-     * @return 用户。
-     */
-    public boolean findByAccountAndPassword(final String account, final String password) {
-        final SysUser sysUser = super.getBaseMapper().findByAccount(account);
-        if(Objects.isNull(sysUser)) {
-            return Boolean.FALSE;
-        }
-        if (!sysUserPasswordHandler.matches(password, sysUser.getUserPassword())) {
-            return Boolean.FALSE;
-        }
-        return Boolean.TRUE;
-    }
-
-    /**
-     * 根据帐号查询用户的部门。
-     *
-     * @param account 帐号。
-     * @return 部门主键。
-     */
-    @Override
-    public long findDeptIdByAccount(final String account) {
-        final SysUser sysUser = super.getBaseMapper().findByAccount(account);
-        if (Objects.isNull(sysUser)) {
-            throw new SysUserNotFoundException("根据账号[" + account + "]未能查询到用户");
-        }
-        return sysUser.getDeptId();
-    }
-
-    /**
-     * 根据条件分页查询用户。
-     *
-     * @param page    分页。
-     * @param sysUser 查询条件。
-     * @return 用户集合。
-     */
-    @Override
-    public Page<SysUser> findByPageAndCondition(final Page<SysUser> page, final SysUser sysUser) {
-        final QueryWrapper<SysUser> wrapper = createQueryWrapper(sysUser);
-        Page<SysUser> result = super.page(page, wrapper);
-        final Map<Long, String> deptMap = sysDeptService.findAllToMap();
-        for (final SysUser user : result.getRecords()) {
-            if (deptMap.containsKey(user.getDeptId())) {
-                user.setDeptName(deptMap.get(user.getDeptId()));
-            }
-        }
-        return result;
-    }
-
-    /**
      * 检测用户帐号是否存在。
      *
      * @param id      用户主键。
@@ -273,6 +189,57 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     /**
+     * 根据帐号查询用户。
+     *
+     * @param id 用户主键。
+     * @return 用户。
+     */
+    @Override
+    public SysUser findById(final long id) {
+        // 查询用户
+        final SysUser sysUser = getById(id);
+        if (Objects.isNull(sysUser)) {
+            throw new SysUserNotFoundException("根据主键[" + id + "]未能查询到用户");
+        }
+        // 查询用户拥有的角色
+        final List<SysRole> sysRoles = sysRoleService.findRolesByUserId(sysUser.getId());
+        sysUser.setRoles(sysRoles);
+        // 查询用户拥有的角色的功能合集
+        if (CollectionUtils.isNotEmpty(sysRoles)) {
+            final List<Long> roleIds = sysRoles.stream().map(SysRole::getId).collect(Collectors.toList());
+            final List<Long> funcIds = sysRoleService.findFuncIdsByRoleIds(roleIds);
+            final List<SysFunc> funcs = sysFuncService.findByIds(funcIds);
+            sysUser.setFuncs(funcs);
+        }
+        // 查询用户拥有的部门
+        final SysDept sysDept = sysDeptService.findById(sysUser.getDeptId());
+        sysUser.setDept(sysDept);
+        sysUser.setDeptName(sysDept.getDeptName());
+        // 查询用户所属的租户
+        final SysTenant sysTenant = sysTenantService.findById(sysUser.getTenantId());
+        sysUser.setTenant(sysTenant);
+        return sysUser;
+    }
+
+    /**
+     * 根据帐号密码查询用户。
+     *
+     * @param account  帐号。
+     * @param password 密码。
+     * @return 用户。
+     */
+    public SysUser findByAccountAndPassword(final String account, final String password) {
+        final SysUser sysUser = super.baseMapper.findByAccountAndPassword(
+                account,
+                sysUserPasswordHandler.encode(password)
+        );
+        if (Objects.isNull(sysUser)) {
+            throw new SysUserNotFoundException("根据帐号密码未能查询到用户。");
+        }
+        return sysUser;
+    }
+
+    /**
      * 根据部门主键查询部门下的用户数量。
      *
      * @param deptId 部门主键。
@@ -283,6 +250,26 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return super.count(
                 createQueryWrapper().lambda().eq(SysUser::getDeptId, deptId)
         );
+    }
+
+    /**
+     * 根据条件分页查询用户。
+     *
+     * @param page    分页。
+     * @param sysUser 查询条件。
+     * @return 用户集合。
+     */
+    @Override
+    public Page<SysUser> findByPageAndCondition(final Page<SysUser> page, final SysUser sysUser) {
+        final QueryWrapper<SysUser> wrapper = createQueryWrapper(sysUser);
+        Page<SysUser> result = super.page(page, wrapper);
+        final Map<Long, String> deptMap = sysDeptService.findAllToMap();
+        for (final SysUser user : result.getRecords()) {
+            if (deptMap.containsKey(user.getDeptId())) {
+                user.setDeptName(deptMap.get(user.getDeptId()));
+            }
+        }
+        return result;
     }
 
     /**
@@ -315,6 +302,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
         if (!Objects.isNull(sysUser.getUserStatus())) {
             criteria.eq(SysUser::getUserStatus, sysUser.getUserStatus());
+        }
+        if (!Objects.isNull(sysUser.getDeptId())) {
+            criteria.eq(SysUser::getDeptId, sysUser.getDeptId());
         }
         criteria.orderByDesc(SysUser::getCreateTime);
         return queryWrapper;

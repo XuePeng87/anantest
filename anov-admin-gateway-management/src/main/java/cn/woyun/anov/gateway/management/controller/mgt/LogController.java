@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.management.controller.mgt;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.bean.request.mgt.LogQueryRequestBean;
 import cn.woyun.anov.gateway.management.bean.response.mgt.LogResponseBean;
@@ -28,6 +29,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/v1/logs")
 @Api(tags = "日志API接口")
+@SaCheckLogin
 public class LogController extends BaseController {
 
     /**

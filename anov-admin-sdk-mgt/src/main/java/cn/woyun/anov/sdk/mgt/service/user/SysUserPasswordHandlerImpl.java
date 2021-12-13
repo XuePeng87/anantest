@@ -1,10 +1,10 @@
 package cn.woyun.anov.sdk.mgt.service.user;
 
+import cn.woyun.anov.codec.MD5Util;
 import cn.woyun.anov.config.mgt.SysUserConfiguration;
 import cn.woyun.anov.random.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,29 +35,7 @@ public class SysUserPasswordHandlerImpl implements SysUserPasswordHandler {
      */
     @Override
     public String encode(final String password) {
-        return passwordEncoder.encode(password);
-    }
-
-    /**
-     * 验证用户旧密码是否正确。
-     *
-     * @param oldPassword  旧密码。
-     * @param currPassword 当前密码。
-     * @return 旧密码是否正确。
-     */
-    @Override
-    public boolean matches(final String oldPassword, final String currPassword) {
-        return passwordEncoder.matches(oldPassword, currPassword);
-    }
-
-    /**
-     * 自动装配密码加密工具。
-     *
-     * @param passwordEncoder 密码加密工具。
-     */
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
+        return MD5Util.encode(password);
     }
 
     /**
@@ -69,11 +47,6 @@ public class SysUserPasswordHandlerImpl implements SysUserPasswordHandler {
     public void setSysUserConfiguration(SysUserConfiguration sysUserConfiguration) {
         this.sysUserConfiguration = sysUserConfiguration;
     }
-
-    /**
-     * 密码加密工具。
-     */
-    private PasswordEncoder passwordEncoder;
 
     /**
      * 用户管理配置信息。

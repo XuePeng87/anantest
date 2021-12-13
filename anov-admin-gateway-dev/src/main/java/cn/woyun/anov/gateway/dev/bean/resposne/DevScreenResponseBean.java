@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 @Data
-@ToString
 @EqualsAndHashCode
+@ToString
 @ApiModel(value = "大屏的响应类")
 public class DevScreenResponseBean {
 

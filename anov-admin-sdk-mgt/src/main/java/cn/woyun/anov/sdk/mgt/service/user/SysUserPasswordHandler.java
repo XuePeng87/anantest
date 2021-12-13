@@ -20,13 +20,4 @@ public interface SysUserPasswordHandler {
      */
     String encode(final String password);
 
-    /**
-     * 验证用户旧密码是否正确。
-     *
-     * @param oldPassword  旧密码。
-     * @param currPassword 当前密码。
-     * @return 旧密码是否正确。
-     */
-    boolean matches(final String oldPassword, final String currPassword);
-
 }

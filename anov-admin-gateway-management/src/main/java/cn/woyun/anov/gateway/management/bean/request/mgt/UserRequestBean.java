@@ -1,6 +1,7 @@
 package cn.woyun.anov.gateway.management.bean.request.mgt;
 
 import cn.woyun.anov.gateway.management.bean.request.BaseRequestBean;
+import cn.woyun.anov.sdk.mgt.entity.SysRole;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -8,7 +9,10 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 用户的请求参数类。
@@ -67,5 +71,12 @@ public class UserRequestBean extends BaseRequestBean {
     @ApiModelProperty(value = "用户状态", notes = "0=停用；1=启用", required = true, position = 6)
     @NotNull(message = "用户状态不能为空")
     private Integer userStatus;
+
+    /**
+     * 角色集合。
+     */
+    @ApiModelProperty(value = "用户拥有的角色", required = true, position = 7)
+    @NotEmpty(message = "用户角色不能为空")
+    private List<SysRole> roles = new ArrayList<>();
 
 }

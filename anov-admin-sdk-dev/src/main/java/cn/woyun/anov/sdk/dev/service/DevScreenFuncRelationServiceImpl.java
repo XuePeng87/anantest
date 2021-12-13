@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -28,12 +29,13 @@ public class DevScreenFuncRelationServiceImpl extends ServiceImpl<DevScreenFuncR
      * 保存大屏与功能的关系。
      *
      * @param id        大屏主键。
+     * @param tenantId  大屏租户主键。
      * @param funcNames 功能名称。
      * @return 是否保存成功。
      */
     @Override
     @Transactional
-    public boolean saveScreenFunc(final long id, final Collection<String> funcNames) {
+    public boolean saveScreenFunc(final long id, final Long tenantId, final Collection<String> funcNames) {
         // 删除大屏与功能的关系
         final UpdateWrapper<DevScreenFuncRelation> wrapper = createUpdateWrapper();
         wrapper.lambda().eq(DevScreenFuncRelation::getScreenId, id);
@@ -42,6 +44,7 @@ public class DevScreenFuncRelationServiceImpl extends ServiceImpl<DevScreenFuncR
         final List<DevScreenFuncRelation> devScreenFuncRelations = new ArrayList<>(funcNames.size());
         for (final String funcName : funcNames) {
             final DevScreenFuncRelation devScreenFuncRelation = new DevScreenFuncRelation();
+            if (!Objects.isNull(tenantId)) devScreenFuncRelation.setTenantId(tenantId);
             devScreenFuncRelation.setScreenId(id);
             devScreenFuncRelation.setFuncName(funcName);
             devScreenFuncRelations.add(devScreenFuncRelation);

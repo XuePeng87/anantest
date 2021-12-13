@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.management.controller.mgt;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.annotation.log.OperationTypeEnum;
 import cn.woyun.anov.gateway.management.annotation.user.CreateUser;
@@ -24,6 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 部门的API类。
@@ -33,6 +35,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/depts")
 @Api(tags = "部门API接口")
+@SaCheckLogin
 public class DeptController extends BaseController {
 
     /**
@@ -47,6 +50,9 @@ public class DeptController extends BaseController {
     @ApiOperation(value = "创建部门")
     public HttpResult<Boolean> create(@Valid @RequestBody final DeptRequestBean deptRequestBean) {
         final SysDept sysDept = BeanUtil.objToObj(deptRequestBean, SysDept.class);
+        // 设置租户主键
+        final Long tenantId = getTenantId();
+        if (!Objects.isNull(tenantId)) sysDept.setTenantId(tenantId);
         if (sysDeptService.create(sysDept)) {
             return DefaultHttpResultFactory.success("创建部门成功。", Boolean.TRUE);
         }

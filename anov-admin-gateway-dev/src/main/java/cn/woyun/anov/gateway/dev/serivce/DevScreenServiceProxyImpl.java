@@ -51,6 +51,7 @@ public class DevScreenServiceProxyImpl implements DevScreenServiceProxy {
         // 签名中的标识与请求的标识不一致
         checkKey(key, devScreenToken.getKey());
         // 请求时间区间过大，认证不通过
+        // TODO 每次请求都需要验证
         // checkRequestTime(devScreenToken.getTime());
         // 判断大屏是否存在
         final DevScreen devScreen = checkScreenExisted(key);
@@ -63,6 +64,7 @@ public class DevScreenServiceProxyImpl implements DevScreenServiceProxy {
         final String clientCode = request.getHeader(DevScreenConsts.CLIENT_CODE);
         final DevScreenClient devScreenClient = devScreenClientCreator.create(request);
         devScreenClient.setScreenKey(key);
+        devScreenClient.setTenantId(devScreen.getTenantId());
         devScreenClient.setClientCode(this.generateClientCode(clientCode));
         devScreenClientService.createOrUpdate(devScreenClient);
 

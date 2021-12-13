@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.dev.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.codec.RsaUtils;
 import cn.woyun.anov.config.mgt.SysUserConfiguration;
@@ -7,7 +8,7 @@ import cn.woyun.anov.gateway.dev.bean.request.AppLoginRequestBean;
 import cn.woyun.anov.gateway.dev.bean.resposne.DevAppLoginResponseBean;
 import cn.woyun.anov.gateway.dev.bean.resposne.DevScreenClientResponseBean;
 import cn.woyun.anov.gateway.dev.exception.app.DevAppLoginPasswordDecodeException;
-import cn.woyun.anov.gateway.dev.exception.app.DevAppLoginVerifyCodeException;
+import cn.woyun.anov.gateway.dev.exception.app.DevAppLoginVerifyCodeIncorrectException;
 import cn.woyun.anov.gateway.dev.serivce.DevAppServiceProxy;
 import cn.woyun.anov.http.DefaultHttpResultFactory;
 import cn.woyun.anov.http.HttpResult;
@@ -36,6 +37,7 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/apps")
 @Api(tags = "控制器API接口")
+@SaCheckLogin
 public class DevAppController extends BaseController {
 
     /**
@@ -61,23 +63,16 @@ public class DevAppController extends BaseController {
         // 根据RSA解密密码
         final String password;
         try {
-            password = RsaUtils.decryptByPrivateKey(
-                    sysUserConfiguration.getPasswordPrivate(),
-                    appLoginRequestBean.getPassword()
-            );
+            password = RsaUtils.decryptByPrivateKey(sysUserConfiguration.getPasswordPrivate(), appLoginRequestBean.getPassword());
         } catch (Exception e) {
-            log.info("app login password decode error, password is {}, cause is {}",
-                    appLoginRequestBean.getPassword(),
-                    e.getMessage());
+            log.info("app login password decode error, password is {}, cause is {}", appLoginRequestBean.getPassword(), e.getMessage());
             throw new DevAppLoginPasswordDecodeException("密码解密失败。");
         }
         // 判断验证码是否正确
-        if (!verifyCodeService.validate(appLoginRequestBean.getUuid(), appLoginRequestBean.getCode())) {
-            throw new DevAppLoginVerifyCodeException("验证码不正确。");
+        if (verifyCodeService.validate(appLoginRequestBean.getUuid(), appLoginRequestBean.getCode())) {
+            throw new DevAppLoginVerifyCodeIncorrectException("验证码不正确。");
         }
-        return DefaultHttpResultFactory.success("登录成功", devAppServiceProxy.login(
-                appLoginRequestBean.getUsername(), password
-        ));
+        return DefaultHttpResultFactory.success("登录成功", devAppServiceProxy.login(appLoginRequestBean.getUsername(), password));
     }
 
     /**

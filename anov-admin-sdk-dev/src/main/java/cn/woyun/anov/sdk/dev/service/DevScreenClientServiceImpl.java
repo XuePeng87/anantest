@@ -56,7 +56,8 @@ public class DevScreenClientServiceImpl extends ServiceImpl<DevScreenClientMappe
             devScreen.setScreenPreviewed(Boolean.FALSE);
         }
         devScreen.setScreenKey(devScreenClient.getScreenKey());
-        devScreenService.updateByKey(devScreen);
+        // 更新大屏的预览状态，并把大屏的检测次数+1
+        devScreenService.updateScreenPriview(devScreen);
         // 查询客户端是否存在
         final DevScreenClient client = super.getOne(
                 createQueryWrapper().lambda()
@@ -65,96 +66,11 @@ public class DevScreenClientServiceImpl extends ServiceImpl<DevScreenClientMappe
         );
         // 如果不存在则新建
         if (Objects.isNull(client)) {
-            devScreenClient.setTenantId(devScreen.getTenantId());
             return super.save(devScreenClient);
         }
         // 如果存在则修改
         devScreenClient.setId(client.getId());
         return super.updateById(devScreenClient);
-    }
-
-    /**
-     * 根据客户端唯一标识查询客户端信息。
-     *
-     * @param code 客户端唯一标识。
-     * @return 客户端信息。
-     */
-    public DevScreenClient findScreenByCode(final String code) {
-        return super.getOne(
-                createQueryWrapper().lambda().eq(DevScreenClient::getClientCode, code),
-                false
-        );
-    }
-
-    /**
-     * 根据客户端唯一标识获取前三个在线大历史大屏信息。
-     *
-     * @param code 客户端唯一标识。
-     * @return 客户端集合。
-     */
-    public List<DevScreenClient> findOnlineTop3HistoryScreenByCode(final String code) {
-        final List<DevScreenClient> clients = super.list(
-                createQueryWrapper().lambda()
-                        .eq(DevScreenClient::getClientCode, code)
-                        .orderByDesc(DevScreenClient::getClientOfflineTime)
-        );
-        final List<String> codes = clients.stream().map(DevScreenClient::getClientRemoteCode).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(codes)) {
-            return new ArrayList<>();
-        }
-        return super.list(
-                createQueryWrapper().lambda()
-                        .in(DevScreenClient::getClientCode, codes)
-                        .eq(DevScreenClient::getClientOnlined, Boolean.TRUE).last("limit 3")
-        );
-    }
-
-    /**
-     * 根据项目唯一标识和客户端唯一标识查询客户端信息。
-     *
-     * @param key  大屏唯一标识。
-     * @param code 客户端唯一标识。
-     * @return 客户端信息。
-     */
-    @Override
-    public DevScreenClient findScreenByKeyAndCode(final String key, final String code) {
-        return super.getOne(
-                createQueryWrapper().lambda()
-                        .eq(DevScreenClient::getScreenKey, key)
-                        .eq(DevScreenClient::getClientCode, code),
-                false
-        );
-    }
-
-    /**
-     * 根据客户端唯一标识查询要发送的客户端信息。
-     *
-     * @param key  大屏唯一标识。
-     * @param code 客户端唯一标识。
-     * @return 客户端信息集合。
-     */
-    @Override
-    public List<DevScreenClient> findSendTargetByKeyAndCode(final String key, final String code) {
-        return super.list(createQueryWrapper().lambda()
-                .eq(DevScreenClient::getScreenKey, key)
-                .and(o -> o.eq(DevScreenClient::getClientCode, code)
-                        .or()
-                        .eq(DevScreenClient::getClientRemoteCode, code)
-                )
-        );
-    }
-
-    /**
-     * 检测客户端唯一标识是否存在。
-     *
-     * @param clientCode 客户端唯一标识。
-     * @return 是否存在。
-     */
-    @Override
-    public boolean checkClientCodeExist(final String clientCode) {
-        return super.count(
-                createQueryWrapper().lambda().eq(DevScreenClient::getClientCode, clientCode)
-        ) > 0;
     }
 
     /**
@@ -237,6 +153,92 @@ public class DevScreenClientServiceImpl extends ServiceImpl<DevScreenClientMappe
         return super.update(client, createUpdateWrapper().lambda()
                 .eq(DevScreenClient::getScreenKey, key)
                 .eq(DevScreenClient::getClientCode, code));
+    }
+
+    /**
+     * 根据客户端唯一标识查询客户端信息。
+     *
+     * @param code 客户端唯一标识。
+     * @return 客户端信息。
+     */
+    public DevScreenClient findScreenByCode(final String code) {
+        return super.getOne(
+                createQueryWrapper().lambda().eq(DevScreenClient::getClientCode, code),
+                false
+        );
+    }
+
+    /**
+     * 根据客户端唯一标识获取前三个在线大历史大屏信息。
+     *
+     * @param code 客户端唯一标识。
+     * @return 客户端集合。
+     */
+    public List<DevScreenClient> findOnlineTop3HistoryScreenByCode(final String code) {
+        // 查询出当前控制器连接过的大屏信息
+        final List<DevScreenClient> clients = super.list(
+                createQueryWrapper().lambda()
+                        .eq(DevScreenClient::getClientCode, code)
+                        .orderByDesc(DevScreenClient::getClientOfflineTime)
+        );
+        // 查询最近连接过的前三个在线的大屏
+        final List<String> codes = clients.stream().map(DevScreenClient::getClientRemoteCode).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(codes)) {
+            return new ArrayList<>();
+        }
+        return super.list(
+                createQueryWrapper().lambda()
+                        .in(DevScreenClient::getClientCode, codes)
+                        .eq(DevScreenClient::getClientOnlined, Boolean.TRUE).last("limit 3")
+        );
+    }
+
+    /**
+     * 根据项目唯一标识和客户端唯一标识查询客户端信息。
+     *
+     * @param key  大屏唯一标识。
+     * @param code 客户端唯一标识。
+     * @return 客户端信息。
+     */
+    @Override
+    public DevScreenClient findScreenByKeyAndCode(final String key, final String code) {
+        return super.getOne(
+                createQueryWrapper().lambda()
+                        .eq(DevScreenClient::getScreenKey, key)
+                        .eq(DevScreenClient::getClientCode, code),
+                false
+        );
+    }
+
+    /**
+     * 根据客户端唯一标识查询要发送的客户端信息。
+     *
+     * @param key  大屏唯一标识。
+     * @param code 客户端唯一标识。
+     * @return 客户端信息集合。
+     */
+    @Override
+    public List<DevScreenClient> findSendTargetByKeyAndCode(final String key, final String code) {
+        return super.list(createQueryWrapper().lambda()
+                .eq(DevScreenClient::getScreenKey, key)
+                .and(o -> o.eq(DevScreenClient::getClientCode, code)
+                        .or()
+                        .eq(DevScreenClient::getClientRemoteCode, code)
+                )
+        );
+    }
+
+    /**
+     * 检测客户端唯一标识是否存在。
+     *
+     * @param clientCode 客户端唯一标识。
+     * @return 是否存在。
+     */
+    @Override
+    public boolean checkClientCodeExist(final String clientCode) {
+        return super.count(
+                createQueryWrapper().lambda().eq(DevScreenClient::getClientCode, clientCode)
+        ) > 0;
     }
 
     /**

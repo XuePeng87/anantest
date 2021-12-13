@@ -1,5 +1,6 @@
 package cn.woyun.anov.gateway.management.controller.dev;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.annotation.log.OperationLog;
 import cn.woyun.anov.gateway.management.annotation.log.OperationTypeEnum;
@@ -12,6 +13,7 @@ import cn.woyun.anov.http.HttpResult;
 import cn.woyun.anov.json.JsonMapper;
 import cn.woyun.anov.page.PageResult;
 import cn.woyun.anov.sdk.dev.entity.DevScreenClient;
+import cn.woyun.anov.sdk.dev.exception.DevScreenClientQuitException;
 import cn.woyun.anov.sdk.dev.service.DevScreenClientService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,6 +37,7 @@ import javax.validation.Valid;
 @RequestMapping("/v1/devs/clients")
 @Api(tags = "大屏客户端API接口")
 @Slf4j
+@SaCheckLogin
 public class DevScreenClientController extends BaseController {
 
     /**
@@ -46,8 +49,7 @@ public class DevScreenClientController extends BaseController {
     @PostMapping("/v1/conditions")
     @OperationLog(system = "管理平台", module = "大屏客户端", description = "根据条件分页查询大屏客户端", type = OperationTypeEnum.QUERY)
     @ApiOperation(value = "根据条件分页查询大屏客户端")
-    public HttpResult<PageResult<DevScreenClientResponseBean>> findByConditionAndPage(@Valid @RequestBody final DevScreenClientQueryRequestBean
-                                                                                              devScreenClientQueryRequestBean) {
+    public HttpResult<PageResult<DevScreenClientResponseBean>> findByConditionAndPage(@Valid @RequestBody final DevScreenClientQueryRequestBean devScreenClientQueryRequestBean) {
         final DevScreenClient devScreenClient = BeanUtil.objToObj(devScreenClientQueryRequestBean, DevScreenClient.class);
         final Page<DevScreenClient> page = pageParamToPage(devScreenClientQueryRequestBean.getPage());
         final Page<DevScreenClient> devScreenClients = devScreenClientService.findByPageAndCondition(page, devScreenClient);
@@ -56,7 +58,7 @@ public class DevScreenClientController extends BaseController {
     }
 
     /**
-     * 强制断开大屏连接。
+     * 强制断开大屏客户端的连接。
      *
      * @param devScreenClientQuitRequestBean 断开连接的请求参数对象。
      * @return 是否断开成功。
@@ -66,6 +68,7 @@ public class DevScreenClientController extends BaseController {
     @ApiOperation(value = "强制断开大屏连接")
     public HttpResult<Boolean> quit(@Valid @RequestBody DevScreenClientQuitRequestBean devScreenClientQuitRequestBean) {
         try {
+            // 远程调用大屏API
             final ResponseEntity<String> quit = restTemplate.postForEntity(
                     "http://localhost:45672/api/devs/v1/{key}/clients/{code}/quit",
                     null,
@@ -77,13 +80,11 @@ public class DevScreenClientController extends BaseController {
             if (jsonNode.get("code").asInt() == 20000) {
                 return DefaultHttpResultFactory.success("大屏强制下线成功。", Boolean.TRUE);
             } else {
-                return DefaultHttpResultFactory.fail(
-                        "大屏强制下线失败，" + jsonNode.get("msg").asText(),
-                        Boolean.FALSE);
+                throw new DevScreenClientQuitException("大屏强制下线失败，" + jsonNode.get("msg").asText());
             }
         } catch (HttpStatusCodeException e) {
             log.error("invoke dev screen quit API error, code is {}", e.getStatusCode());
-            return DefaultHttpResultFactory.fail("强制下线失败", Boolean.FALSE);
+            throw new DevScreenClientQuitException("调用大屏强制下线API失败，错误码：" + e.getStatusCode());
         } catch (Exception e) {
             log.error("server is error, cause is {}", e.getMessage());
             return DefaultHttpResultFactory.error("服务器错误", Boolean.FALSE);
@@ -100,6 +101,11 @@ public class DevScreenClientController extends BaseController {
         this.devScreenClientService = devScreenClientService;
     }
 
+    /**
+     * 自动装配HttpClient工具。
+     *
+     * @param restTemplate HttpClient工具。
+     */
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -110,6 +116,9 @@ public class DevScreenClientController extends BaseController {
      */
     private DevScreenClientService devScreenClientService;
 
+    /**
+     * HttpClient工具。
+     */
     private RestTemplate restTemplate;
 
 }

@@ -33,12 +33,12 @@ public interface DevScreenService extends IService<DevScreen> {
     boolean update(final DevScreen devScreen);
 
     /**
-     * 根据标识修改大屏。
+     * 更新大屏的预览状态，并把大屏的检测次数+1
      *
-     * @param devScreen 大屏标识。
+     * @param devScreen 大屏。
      * @return 是否修改成功。
      */
-    boolean updateByKey(final DevScreen devScreen);
+    boolean updateScreenPriview(final DevScreen devScreen);
 
     /**
      * 根据唯一标识更新最新图片。

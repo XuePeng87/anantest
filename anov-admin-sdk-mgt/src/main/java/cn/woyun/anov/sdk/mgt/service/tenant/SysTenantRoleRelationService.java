@@ -19,8 +19,7 @@ public interface SysTenantRoleRelationService extends IService<SysTenantRoleRela
      *
      * @param tenantId 租户主键。
      * @param roleIds  角色主键集合。
-     * @return 是否保存成功。
      */
-    boolean saveTenantToRole(final long tenantId, final Collection<Long> roleIds);
+    void saveTenantToRole(final long tenantId, final Collection<Long> roleIds);
 
 }

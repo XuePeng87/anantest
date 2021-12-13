@@ -1,13 +1,17 @@
 package cn.woyun.anov.gateway.management.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.woyun.anov.json.JsonMapper;
 import cn.woyun.anov.page.OrderInfo;
 import cn.woyun.anov.page.PageParam;
 import cn.woyun.anov.page.PageResult;
+import cn.woyun.anov.sdk.mgt.entity.SysRole;
+import cn.woyun.anov.sdk.mgt.entity.SysUser;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 所有业务Controller的父类。
@@ -73,6 +78,18 @@ public class BaseController {
         } catch (IOException e) {
             throw new IllegalArgumentException("Page对象转换异常", e);
         }
+    }
+
+    public Long getTenantId() {
+        if (!StpUtil.isLogin()) return null;
+        final SysUser sysUser = (SysUser) StpUtil.getSession().get("user");
+        if (Objects.isNull(sysUser)) return null;
+        for (final SysRole sysRole : sysUser.getRoles()) {
+            if (StringUtils.equals(sysRole.getRoleCode(), "ROLE_SUPER_ADMIN")) {
+                return sysUser.getTenantId();
+            }
+        }
+        return null;
     }
 
     /**

@@ -26,11 +26,10 @@ public class SysTenantRoleRelationServiceImpl extends ServiceImpl<SysTenantRoleR
      *
      * @param tenantId 租户主键。
      * @param roleIds  角色主键集合。
-     * @return 是否保存成功。
      */
     @Override
     @Transactional
-    public boolean saveTenantToRole(final long tenantId, final Collection<Long> roleIds) {
+    public void saveTenantToRole(final long tenantId, final Collection<Long> roleIds) {
         super.remove(
                 createUpdateWrapper().lambda().eq(SysTenantRoleRelation::getTenantId, tenantId)
         );
@@ -41,7 +40,7 @@ public class SysTenantRoleRelationServiceImpl extends ServiceImpl<SysTenantRoleR
             sysTenantRoleRelation.setRoleId(roleId);
             sysTenantRoleRelations.add(sysTenantRoleRelation);
         }
-        return super.saveBatch(sysTenantRoleRelations);
+        super.saveBatch(sysTenantRoleRelations);
     }
 
     /**

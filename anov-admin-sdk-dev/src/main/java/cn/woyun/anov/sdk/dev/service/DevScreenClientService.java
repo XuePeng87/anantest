@@ -25,6 +25,43 @@ public interface DevScreenClientService extends IService<DevScreenClient> {
     boolean createOrUpdate(final DevScreenClient devScreenClient);
 
     /**
+     * 大屏客户端上线。
+     *
+     * @param key  大屏唯一标识。
+     * @param code 客户端唯一标识。
+     * @return 是否上线成功。
+     */
+    boolean screenOnline(final String key, final String code);
+
+    /**
+     * 移动控制端上线。
+     *
+     * @param key    大屏唯一标识。
+     * @param code   客户端唯一标识。
+     * @param target 目标客户端唯一标识。
+     * @return 是否上线成功。
+     */
+    boolean controllerOnline(final String key, final String code, final String target);
+
+    /**
+     * 大屏客户端下线。
+     *
+     * @param key  大屏唯一标识。
+     * @param code 客户端唯一标识。
+     * @return 是否下线成功。
+     */
+    boolean screenOffline(final String key, final String code);
+
+    /**
+     * 移动控制端下线。
+     *
+     * @param key  大屏唯一标识。
+     * @param code 客户端唯一标识。
+     * @return 是否下线成功。
+     */
+    boolean controllerOffline(final String key, final String code);
+
+    /**
      * 根据客户端唯一标识查询客户端信息。
      *
      * @param code 客户端唯一标识。
@@ -65,43 +102,6 @@ public interface DevScreenClientService extends IService<DevScreenClient> {
      * @return 是否存在。
      */
     boolean checkClientCodeExist(final String clientCode);
-
-    /**
-     * 大屏客户端上线。
-     *
-     * @param key  大屏唯一标识。
-     * @param code 客户端唯一标识。
-     * @return 是否上线成功。
-     */
-    boolean screenOnline(final String key, final String code);
-
-    /**
-     * 移动控制端上线。
-     *
-     * @param key    大屏唯一标识。
-     * @param code   客户端唯一标识。
-     * @param target 目标客户端唯一标识。
-     * @return 是否上线成功。
-     */
-    boolean controllerOnline(final String key, final String code, final String target);
-
-    /**
-     * 大屏客户端下线。
-     *
-     * @param key  大屏唯一标识。
-     * @param code 客户端唯一标识。
-     * @return 是否下线成功。
-     */
-    boolean screenOffline(final String key, final String code);
-
-    /**
-     * 移动控制端下线。
-     *
-     * @param key  大屏唯一标识。
-     * @param code 客户端唯一标识。
-     * @return 是否下线成功。
-     */
-    boolean controllerOffline(final String key, final String code);
 
     /**
      * 根据条件分页查询大屏客户端。

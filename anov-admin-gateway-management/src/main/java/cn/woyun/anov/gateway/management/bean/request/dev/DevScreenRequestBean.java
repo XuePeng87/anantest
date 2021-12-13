@@ -25,7 +25,7 @@ public class DevScreenRequestBean extends BaseRequestBean {
     /**
      * 名称
      */
-    @ApiModelProperty(value = "大屏唯一标识", required = true, position = 1)
+    @ApiModelProperty(value = "大屏唯一标识", position = 1)
     @Length(max = 12, message = "大屏唯一标识长度不能大于12个字符")
     private String screenKey;
 

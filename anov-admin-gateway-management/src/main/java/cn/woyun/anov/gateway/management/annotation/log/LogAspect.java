@@ -1,22 +1,18 @@
 package cn.woyun.anov.gateway.management.annotation.log;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.bean.request.mgt.LogRequestBean;
-import cn.woyun.anov.gateway.management.config.security.WebSecurityAuthenticationDetails;
 import cn.woyun.anov.gateway.management.controller.BaseController;
 import cn.woyun.anov.sdk.mgt.entity.SysLog;
+import cn.woyun.anov.sdk.mgt.entity.SysUser;
 import cn.woyun.anov.sdk.mgt.service.log.SysLogService;
 import cn.woyun.anov.web.WebUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +43,7 @@ public class LogAspect {
      *
      * @param joinPoint 连接点。
      */
-    @Before("operation()")
+    @AfterReturning("operation()")
     public void beforeOperationLog(final JoinPoint joinPoint) {
         if (joinPoint.getTarget() instanceof BaseController) {
             try {
@@ -87,14 +83,14 @@ public class LogAspect {
     private LogRequestBean createLog(final JoinPoint joinPoint, final Throwable e) {
         final Object controller = joinPoint.getTarget();
         final HttpServletRequest request = ((BaseController) controller).getHttpServletRequest();
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         final Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
         final OperationLog operationLogAnnotation = method.getAnnotation(OperationLog.class);
+        final SysUser sysUser = (SysUser) StpUtil.getSession().get("user");
         //  创建日志操作对象
         final LogRequestBean logRequestBean = new LogRequestBean();
-        logRequestBean.setCreateUser(authentication.getName());
+        logRequestBean.setCreateUser(sysUser.getUserAccount());
+        logRequestBean.setTenantId(sysUser.getTenantId());
         logRequestBean.setCreateTime(LocalDateTime.now());
-        logRequestBean.setTenantId(((WebSecurityAuthenticationDetails) authentication.getDetails()).getTenantId());
         logRequestBean.setLogSystem(operationLogAnnotation.system());
         logRequestBean.setLogModule(operationLogAnnotation.module());
         logRequestBean.setLogDescription(operationLogAnnotation.description());

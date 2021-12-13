@@ -3,7 +3,6 @@ package cn.woyun.anov.gateway.management.bean.response.system;
 import cn.woyun.anov.sdk.mgt.entity.SysUser;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,7 +14,6 @@ import java.io.Serializable;
  * @author xuepeng
  */
 @Data
-@AllArgsConstructor
 @EqualsAndHashCode
 @ApiModel(value = "登录成功的响应数据类")
 public class LoginSuccessResponseBean implements Serializable {

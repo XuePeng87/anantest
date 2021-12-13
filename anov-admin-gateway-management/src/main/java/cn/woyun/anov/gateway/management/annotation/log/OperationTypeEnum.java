@@ -58,6 +58,14 @@ public enum OperationTypeEnum {
     /**
      * 修改状态
      */
-    CHANGE_STATUS
+    CHANGE_STATUS,
+    /**
+     * 登录
+     */
+    LOGIN,
+    /**
+     * 登出
+     */
+    LOGOUT
 
 }

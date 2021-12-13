@@ -1,5 +1,7 @@
 package cn.woyun.anov.gateway.management.controller.mgt;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.woyun.anov.bean.BeanUtil;
 import cn.woyun.anov.gateway.management.annotation.log.OperationTypeEnum;
 import cn.woyun.anov.gateway.management.annotation.user.CreateUser;
@@ -8,7 +10,6 @@ import cn.woyun.anov.gateway.management.annotation.log.OperationLog;
 import cn.woyun.anov.gateway.management.bean.request.mgt.UserQueryRequestBean;
 import cn.woyun.anov.gateway.management.bean.request.mgt.UserRequestBean;
 import cn.woyun.anov.gateway.management.bean.response.mgt.UserResponseBean;
-import cn.woyun.anov.gateway.management.config.security.WebSecurityAuthenticationDetails;
 import cn.woyun.anov.gateway.management.controller.BaseController;
 import cn.woyun.anov.http.DefaultHttpResultFactory;
 import cn.woyun.anov.http.HttpResult;
@@ -22,7 +23,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -30,6 +30,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 用户的API Controller。
@@ -39,6 +40,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/users")
 @Api(tags = "用户API接口")
+@SaCheckLogin
 public class UserController extends BaseController {
 
     /**
@@ -53,8 +55,10 @@ public class UserController extends BaseController {
     @ApiOperation(value = "创建用户")
     public HttpResult<Boolean> create(@Valid @RequestBody final UserRequestBean userRequestBean) {
         final SysUser sysUser = BeanUtil.objToObj(userRequestBean, SysUser.class);
-        // 设置用户主键
-        sysUser.setTenantId(((WebSecurityAuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails()).getTenantId());
+        // 设置租户主键
+        final Long tenantId = getTenantId();
+        if (!Objects.isNull(tenantId)) sysUser.setTenantId(tenantId);
+        sysUser.setTenantId(((SysUser) StpUtil.getSession().get("user")).getTenantId());
         if (sysUserService.create(sysUser)) {
             return DefaultHttpResultFactory.success("创建用户成功。", Boolean.TRUE);
         }
